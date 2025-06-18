@@ -290,10 +290,11 @@ class CarbonEmissionEstimator:
             return 0.0  # Default for unseen categories
     
     def get_feature_importance(self):
-        """Get feature importance based on coefficient magnitudes"""
+        """Get feature importance based on standardized coefficients"""
         if not self.is_trained:
             return {}
         
+        # Using standardized coefficients for feature importance
         importance = {}
         for i, feature_name in enumerate(self.feature_names):
             importance[feature_name] = abs(self.model_coefficients[i])
@@ -302,7 +303,7 @@ class CarbonEmissionEstimator:
         return dict(sorted(importance.items(), key=lambda x: x[1], reverse=True))
     
     def save_model(self, filepath):
-        """Save trained model to file"""
+        """Save trained model to file with additional metadata"""
         if not self.is_trained:
             raise ValueError("No trained model to save!")
         
@@ -311,7 +312,16 @@ class CarbonEmissionEstimator:
             'feature_names': self.feature_names,
             'model_coefficients': self.model_coefficients.tolist(),
             'intercept': self.intercept,
-            'is_trained': self.is_trained
+            'is_trained': self.is_trained,
+            'feature_stats': {
+                k: {
+                    **{kk: vv for kk, vv in v.items() if kk != 'categories'},
+                    'categories': list(v['categories']) if v.get('categories') is not None else None
+                }
+                for k, v in self.feature_stats.items()
+            },
+            'scaler_mean_': self.scaler.mean_.tolist() if self.is_trained else None,
+            'scaler_scale_': self.scaler.scale_.tolist() if self.is_trained else None
         }
         
         with open(filepath, 'w') as f:
@@ -320,68 +330,130 @@ class CarbonEmissionEstimator:
         print(f"Model saved to {filepath}")
     
     def load_model(self, filepath):
-        """Load trained model from file"""
-        with open(filepath, 'r') as f:
-            model_data = json.load(f)
+        """Load trained model from file with validation"""
+        try:
+            with open(filepath, 'r') as f:
+                model_data = json.load(f)
+            
+            # Validate model data
+            required_keys = {'feature_encoders', 'feature_names', 'model_coefficients', 
+                           'intercept', 'is_trained', 'scaler_mean_', 'scaler_scale_'}
+            missing_keys = required_keys - set(model_data.keys())
+            if missing_keys:
+                raise ValueError(f"Missing required model data: {missing_keys}")
+            
+            self.feature_encoders = model_data['feature_encoders']
+            self.feature_names = model_data['feature_names']
+            self.model_coefficients = np.array(model_data['model_coefficients'])
+            self.intercept = model_data['intercept']
+            self.is_trained = model_data['is_trained']
+            
+            # Restore scaler
+            self.scaler = StandardScaler()
+            self.scaler.mean_ = np.array(model_data['scaler_mean_'])
+            self.scaler.scale_ = np.array(model_data['scaler_scale_'])
+            
+            # Restore feature statistics if available
+            if 'feature_stats' in model_data:
+                self.feature_stats = {
+                    k: {
+                        **{kk: vv for kk, vv in v.items() if kk != 'categories'},
+                        'categories': set(v['categories']) if v.get('categories') is not None else None
+                    }
+                    for k, v in model_data['feature_stats'].items()
+                }
+            
+            print(f"Model loaded from {filepath}")
+            self._print_model_summary()
+            
+        except Exception as e:
+            raise RuntimeError(f"Error loading model: {str(e)}")
+    
+    def _print_model_summary(self):
+        """Print a summary of the loaded model"""
+        print("\n=== MODEL SUMMARY ===")
+        print(f"Number of features: {len(self.feature_names)}")
+        print("\nTop 5 most important features:")
+        importance = self.get_feature_importance()
+        for feature, score in list(importance.items())[:5]:
+            print(f"  {feature}: {score:.4f}")
         
-        self.feature_encoders = model_data['feature_encoders']
-        self.feature_names = model_data['feature_names']
-        self.model_coefficients = np.array(model_data['model_coefficients'])
-        self.intercept = model_data['intercept']
-        self.is_trained = model_data['is_trained']
-        
-        print(f"Model loaded from {filepath}")
+        # Print feature encoders summary
+        print("\nFeature encoding summary:")
+        for feature, encoder in self.feature_encoders.items():
+            if isinstance(encoder, dict):
+                n_categories = len(encoder)
+                print(f"  {feature}: {n_categories} categories")
 
 # Main execution
 if __name__ == "__main__":
-    print("=== PHASE 1: CARBON EMISSION ESTIMATION ENGINE ===")
+    print("=== CARBON EMISSION ESTIMATION ENGINE ===")
+    print("Version 2.0 - Enhanced with cross-validation and feature scaling")
     
-    # Initialize the estimator
-    estimator = CarbonEmissionEstimator()
-    
-    # Load and prepare data
-    X, y = estimator.load_and_prepare_data('data/Carbon Emission.csv')
-    
-    # Train the model
-    success = estimator.train(X, y)
-    
-    if success:
-        # Show feature importance
-        print("\n=== FEATURE IMPORTANCE ===")
-        importance = estimator.get_feature_importance()
-        for feature, score in list(importance.items())[:10]:  # Top 10
-            print(f"{feature}: {score:.4f}")
+    try:
+        # Initialize the estimator
+        estimator = CarbonEmissionEstimator()
         
-        # Save the trained model
-        estimator.save_model('carbon_emission_model.json')
+        # Load and prepare data
+        X, y = estimator.load_and_prepare_data('data/Carbon Emission.csv')
         
-        # Test with a sample order
-        print("\n=== SAMPLE PREDICTION ===")
-        sample_order = {
-            'Body Type': 'normal',
-            'Sex': 'male', 
-            'Diet': 'omnivore',
-            'How Often Shower': 'daily',
-            'Heating Energy Source': 'electricity',
-            'Transport': 'private',
-            'Vehicle Type': 'petrol',
-            'Social Activity': 'often',
-            'Monthly Grocery Bill': '200',
-            'Frequency of Traveling by Air': 'rarely',
-            'Vehicle Monthly Distance Km': '1000',
-            'Waste Bag Size': 'medium',
-            'Waste Bag Weekly Count': '2',
-            'How Long TV PC Daily Hour': '5',
-            'How Many New Clothes Monthly': '10',
-            'How Long Internet Daily Hour': '4',
-            'Energy efficiency': 'Sometimes',
-            'Recycling': "['Paper', 'Plastic']",
-            'Cooking_With': "['Stove', 'Oven']"
-        }
+        # Train the model with cross-validation
+        success = estimator.train(X, y, n_folds=5)
         
-        predicted_emission = estimator.predict_single_order(sample_order)
-        print(f"Predicted CO₂ emission for sample order: {predicted_emission:.2f} kg")
-        
-        print("\n✅ PHASE 1 COMPLETED: AI Model Ready!")
-    else:
-        print("❌ Model training failed!")
+        if success:
+            # Show feature importance
+            print("\n=== FEATURE IMPORTANCE ANALYSIS ===")
+            importance = estimator.get_feature_importance()
+            print("\nTop 10 most influential factors:")
+            for feature, score in list(importance.items())[:10]:
+                print(f"{feature}: {score:.4f}")
+            
+            # Save the trained model
+            estimator.save_model('carbon_emission_model.json')
+            
+            # Test with a sample order
+            print("\n=== SAMPLE PREDICTION ===")
+            sample_order = {
+                'Body Type': 'normal',
+                'Sex': 'male', 
+                'Diet': 'omnivore',
+                'How Often Shower': 'daily',
+                'Heating Energy Source': 'electricity',
+                'Transport': 'private',
+                'Vehicle Type': 'petrol',
+                'Social Activity': 'often',
+                'Monthly Grocery Bill': '200',
+                'Frequency of Traveling by Air': 'rarely',
+                'Vehicle Monthly Distance Km': '1000',
+                'Waste Bag Size': 'medium',
+                'Waste Bag Weekly Count': '2',
+                'How Long TV PC Daily Hour': '5',
+                'How Many New Clothes Monthly': '10',
+                'How Long Internet Daily Hour': '4',
+                'Energy efficiency': 'Sometimes',
+                'Recycling': "['Paper', 'Plastic']",
+                'Cooking_With': "['Stove', 'Oven']"
+            }
+            
+            try:
+                predicted_emission = estimator.predict_single_order(sample_order)
+                print(f"\nPredicted CO₂ emission for sample order: {predicted_emission:.2f} kg")
+                print("\nMost influential features for this prediction:")
+                importance = estimator.get_feature_importance()
+                feature_values = []
+                for feature, score in list(importance.items())[:5]:
+                    value = sample_order.get(feature, 'N/A')
+                    feature_values.append(f"{feature}: {value} (importance: {score:.4f})")
+                print("\n".join(feature_values))
+            except Exception as e:
+                print(f"Prediction error: {str(e)}")
+            
+            print("\n✅ CARBON EMISSION ESTIMATION ENGINE READY!")
+            print("Use estimator.predict_single_order(order_data) to make predictions")
+            
+        else:
+            print("\n❌ Model training failed! Please check the data and try again.")
+            
+    except Exception as e:
+        print(f"\n❌ Error: {str(e)}")
+        raise
