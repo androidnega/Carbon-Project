@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { db } from "../firebase/config";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "../firebase/AuthContext";
 import "./CarbonForm.css";
 
 const CarbonForm = () => {
+  const { currentUser } = useAuth();
   const [form, setForm] = useState({
     distance: "",
     transport_type: "",
@@ -16,6 +20,7 @@ const CarbonForm = () => {
   const [emission, setEmission] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,12 +30,36 @@ const CarbonForm = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSaveStatus(null);
 
     try {
+      // First, get the prediction from the API
       const res = await axios.post("http://localhost:5000/api/predict", form);
-      setEmission(res.data.emission);
+      const predictionResult = res.data.emission;
+      setEmission(predictionResult);
+
+      // Then, save the result to Firestore
+      await addDoc(collection(db, "emission_records"), {
+        ...form,
+        emission: predictionResult,
+        userId: currentUser.uid,
+        createdAt: serverTimestamp(),
+        userEmail: currentUser.email,
+      });
+
+      setSaveStatus("Results saved successfully!");
     } catch (err) {
-      setError("Error getting prediction. Check your input or server.");
+      console.error("Error:", err);
+      if (err.response) {
+        // API error
+        setError(`Prediction error: ${err.response.data.message || err.message}`);
+      } else if (err.code && err.code.startsWith("firestore")) {
+        // Firestore error
+        setError(`Database error: ${err.message}`);
+      } else {
+        // General error
+        setError(`Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -44,6 +73,7 @@ const CarbonForm = () => {
           type="number"
           name="distance"
           placeholder="Monthly Distance (km)"
+          value={form.distance}
           onChange={handleChange}
           required
         />
@@ -51,6 +81,7 @@ const CarbonForm = () => {
           type="text"
           name="transport_type"
           placeholder="Transport Type (e.g. 0 for car)"
+          value={form.transport_type}
           onChange={handleChange}
           required
         />
@@ -58,6 +89,7 @@ const CarbonForm = () => {
           type="text"
           name="body_type"
           placeholder="Body Type (e.g. 1 for SUV)"
+          value={form.body_type}
           onChange={handleChange}
           required
         />
@@ -65,6 +97,7 @@ const CarbonForm = () => {
           type="text"
           name="sex"
           placeholder="Sex (e.g. 0 for male)"
+          value={form.sex}
           onChange={handleChange}
           required
         />
@@ -72,6 +105,7 @@ const CarbonForm = () => {
           type="text"
           name="diet"
           placeholder="Diet (e.g. 1 for vegetarian)"
+          value={form.diet}
           onChange={handleChange}
           required
         />
@@ -79,6 +113,7 @@ const CarbonForm = () => {
           type="number"
           name="grocery"
           placeholder="Monthly Grocery Bill (GHS)"
+          value={form.grocery}
           onChange={handleChange}
           required
         />
@@ -86,6 +121,7 @@ const CarbonForm = () => {
           type="number"
           name="screen_time"
           placeholder="Daily TV/PC Time (hours)"
+          value={form.screen_time}
           onChange={handleChange}
           required
         />
@@ -99,6 +135,7 @@ const CarbonForm = () => {
           <p>
             Estimated CO₂: <strong>{emission} kg</strong>
           </p>
+          {saveStatus && <p className="success">{saveStatus}</p>}
         </div>
       )}
       {error && <p className="error">{error}</p>}

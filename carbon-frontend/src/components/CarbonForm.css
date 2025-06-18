@@ -73,3 +73,13 @@ button:disabled {
   background-color: #ffebee;
   border-radius: 4px;
 }
+
+.success {
+  color: #2e7d32;
+  text-align: center;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
