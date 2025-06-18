@@ -1,0 +1,153 @@
+{
+  "feature_encoders": {
+    "Body Type": {
+      "overweight": 0,
+      "obese": 1,
+      "underweight": 2,
+      "normal": 3
+    },
+    "Sex": {
+      "female": 0,
+      "male": 1
+    },
+    "Diet": {
+      "pescatarian": 0,
+      "vegetarian": 1,
+      "omnivore": 2,
+      "vegan": 3
+    },
+    "How Often Shower": {
+      "daily": 0,
+      "less frequently": 1,
+      "more frequently": 2,
+      "twice a day": 3
+    },
+    "Heating Energy Source": {
+      "coal": 0,
+      "natural gas": 1,
+      "wood": 2,
+      "electricity": 3
+    },
+    "Transport": {
+      "public": 0,
+      "walk/bicycle": 1,
+      "private": 2
+    },
+    "Vehicle Type": {
+      "": 0,
+      "petrol": 1,
+      "diesel": 2,
+      "hybrid": 3,
+      "lpg": 4,
+      "electric": 5
+    },
+    "Social Activity": {
+      "often": 0,
+      "never": 1,
+      "sometimes": 2
+    },
+    "Monthly Grocery Bill": {},
+    "Frequency of Traveling by Air": {
+      "frequently": 0,
+      "rarely": 1,
+      "never": 2,
+      "very frequently": 3
+    },
+    "Vehicle Monthly Distance Km": {},
+    "Waste Bag Size": {
+      "large": 0,
+      "extra large": 1,
+      "small": 2,
+      "medium": 3
+    },
+    "Waste Bag Weekly Count": {},
+    "How Long TV PC Daily Hour": {},
+    "How Many New Clothes Monthly": {},
+    "How Long Internet Daily Hour": {},
+    "Energy efficiency": {
+      "No": 0,
+      "Sometimes": 1,
+      "Yes": 2
+    },
+    "Recycling": {
+      "['Metal']": 0,
+      "['Paper', 'Plastic', 'Glass', 'Metal']": 1,
+      "['Paper']": 2,
+      "['Paper', 'Glass', 'Metal']": 3,
+      "[]": 4,
+      "['Paper', 'Plastic', 'Glass']": 5,
+      "['Glass']": 6,
+      "['Paper', 'Plastic']": 7,
+      "['Plastic']": 8,
+      "['Plastic', 'Glass', 'Metal']": 9,
+      "['Paper', 'Plastic', 'Metal']": 10,
+      "['Paper', 'Glass']": 11,
+      "['Paper', 'Metal']": 12,
+      "['Glass', 'Metal']": 13,
+      "['Plastic', 'Glass']": 14,
+      "['Plastic', 'Metal']": 15
+    },
+    "Cooking_With": {
+      "['Stove', 'Oven']": 0,
+      "['Stove', 'Microwave']": 1,
+      "['Oven', 'Microwave']": 2,
+      "['Microwave', 'Grill', 'Airfryer']": 3,
+      "['Oven']": 4,
+      "['Stove', 'Oven', 'Microwave']": 5,
+      "['Grill', 'Airfryer']": 6,
+      "['Stove']": 7,
+      "['Stove', 'Oven', 'Microwave', 'Grill', 'Airfryer']": 8,
+      "['Oven', 'Microwave', 'Grill', 'Airfryer']": 9,
+      "['Stove', 'Grill', 'Airfryer']": 10,
+      "['Oven', 'Grill', 'Airfryer']": 11,
+      "['Microwave']": 12,
+      "['Stove', 'Oven', 'Grill', 'Airfryer']": 13,
+      "['Stove', 'Microwave', 'Grill', 'Airfryer']": 14,
+      "[]": 15
+    }
+  },
+  "feature_names": [
+    "Body Type",
+    "Sex",
+    "Diet",
+    "How Often Shower",
+    "Heating Energy Source",
+    "Transport",
+    "Vehicle Type",
+    "Social Activity",
+    "Monthly Grocery Bill",
+    "Frequency of Traveling by Air",
+    "Vehicle Monthly Distance Km",
+    "Waste Bag Size",
+    "Waste Bag Weekly Count",
+    "How Long TV PC Daily Hour",
+    "How Many New Clothes Monthly",
+    "How Long Internet Daily Hour",
+    "Energy efficiency",
+    "Recycling",
+    "Cooking_With"
+  ],
+  "model_coefficients": [
+    -116.05394822509652,
+    334.5429380216176,
+    -4.9536646230512815,
+    7.467107748587665,
+    -128.03767553307807,
+    378.28329554439097,
+    -252.8235280181725,
+    -48.2801743849671,
+    0.9906985371722499,
+    181.99179492809193,
+    0.25355802481724543,
+    -79.77352472302948,
+    84.97068487811885,
+    1.8146040702255704,
+    13.779076655289202,
+    6.378227972238037,
+    -26.974770243151852,
+    -0.5439693648306339,
+    0.2034766645253967
+  ],
+  "intercept": 790.0021871420031,
+  "is_trained": true
+}
