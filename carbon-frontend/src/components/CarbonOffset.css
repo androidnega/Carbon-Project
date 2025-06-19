@@ -1,0 +1,82 @@
+.offset-container {
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.offset-container h4 {
+  color: #2e7d32;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.offset-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .offset-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+.offset-details {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.offset-details p {
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.offset-details strong {
+  color: #2e7d32;
+  font-size: 1.1rem;
+}
+
+.offset-explanation {
+  font-style: italic;
+  color: #666;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.offset-benefits {
+  padding: 1.5rem;
+  background-color: #e8f5e9;
+  border-radius: 8px;
+}
+
+.offset-benefits h5 {
+  color: #2e7d32;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.offset-benefits ul {
+  list-style: none;
+  padding: 0;
+}
+
+.offset-benefits li {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1b5e20;
+}
+
+.paypal-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}

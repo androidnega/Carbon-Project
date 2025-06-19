@@ -1,0 +1,59 @@
+.emission-history {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.emission-history h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.emission-history table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.emission-history th,
+.emission-history td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.emission-history th {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.emission-history tr:hover {
+    background-color: #f5f5f5;
+}
+
+.emission-value {
+    font-weight: 600;
+    color: #e74c3c;
+}
+
+.emission-history tfoot tr td {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.emission-history-empty {
+    padding: 40px;
+    text-align: center;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.emission-history-empty p {
+    color: #7f8c8d;
+    margin-top: 10px;
+}

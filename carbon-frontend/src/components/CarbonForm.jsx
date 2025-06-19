@@ -3,6 +3,10 @@ import axios from "axios";
 import { db } from "../firebase/config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "../firebase/AuthContext";
+import EcoTips from "./EcoTips";
+import CarbonOffset from "./CarbonOffset";
+import SustainabilityReport from "./SustainabilityReport";
+import { generateEcoTips } from "../utils/ecoTips";
 import "./CarbonForm.css";
 
 const CarbonForm = () => {
@@ -21,9 +25,32 @@ const CarbonForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saveStatus, setSaveStatus] = useState(null);
+  const [ecoTips, setEcoTips] = useState([]);
+  const [offsetComplete, setOffsetComplete] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleOffsetSuccess = async (details) => {
+    try {
+      // Save offset payment details to Firestore
+      await addDoc(collection(db, "offset_payments"), {
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        emission: emission,
+        paymentAmount: details.purchase_units[0].amount.value,
+        paymentId: details.id,
+        payerName: details.payer.name,
+        timestamp: serverTimestamp(),
+      });
+
+      setOffsetComplete(true);
+      setSaveStatus("Carbon offset payment completed successfully!");
+    } catch (err) {
+      setError("Failed to record offset payment.");
+      console.error("Offset payment record error:", err);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -31,33 +58,37 @@ const CarbonForm = () => {
     setLoading(true);
     setError(null);
     setSaveStatus(null);
+    setEcoTips([]);
+    setOffsetComplete(false);
 
     try {
-      // First, get the prediction from the API
+      // Get prediction from API
       const res = await axios.post("http://localhost:5000/api/predict", form);
       const predictionResult = res.data.emission;
       setEmission(predictionResult);
 
-      // Then, save the result to Firestore
+      // Generate eco-friendly tips
+      const tips = generateEcoTips(form);
+      setEcoTips(tips);
+
+      // Save to Firestore
       await addDoc(collection(db, "emission_records"), {
         ...form,
         emission: predictionResult,
         userId: currentUser.uid,
         createdAt: serverTimestamp(),
         userEmail: currentUser.email,
+        tips: tips,
       });
 
       setSaveStatus("Results saved successfully!");
     } catch (err) {
       console.error("Error:", err);
       if (err.response) {
-        // API error
         setError(`Prediction error: ${err.response.data.message || err.message}`);
       } else if (err.code && err.code.startsWith("firestore")) {
-        // Firestore error
         setError(`Database error: ${err.message}`);
       } else {
-        // General error
         setError(`Error: ${err.message}`);
       }
     } finally {
@@ -138,6 +169,28 @@ const CarbonForm = () => {
           {saveStatus && <p className="success">{saveStatus}</p>}
         </div>
       )}
+
+      <EcoTips tips={ecoTips} />
+
+      {emission && !offsetComplete && (
+        <CarbonOffset
+          emission={emission}
+          onSuccess={handleOffsetSuccess}
+        />
+      )}
+
+      {offsetComplete && (
+        <div className="offset-success">
+          <h4>🎉 Thank You for Offsetting!</h4>
+          <p>
+            Your contribution will help fund environmental projects to reduce
+            carbon emissions.
+          </p>
+        </div>
+      )}
+
+      <SustainabilityReport />
+
       {error && <p className="error">{error}</p>}
     </div>
   );
